@@ -1,27 +1,25 @@
 import { useEffect, useState } from "react";
 import { format, isToday, isYesterday } from 'date-fns'
 
-export default function Home() {
-  const [deploys, setDeploys] = useState();
-  useEffect(function mount() {
-    if (window.top === window.self) {
-      window.location.assign('https://app.storyblok.com/oauth/app_redirect')
-    } else {
-      loadList();
-    }
-  });
-  const loadList = () => {
-    // TODO: Replace site id
-    fetch('https://api.netlify.com/api/v1/sites/ce1b5cc8-4507-46b9-9416-dae43ce65989/deploys', {
-      headers: {
-        // TODO: Add bearer
-      }
-    })
+export default function Home({ sites }) {
+  const [selectedSite, setSelectedSite] = useState(null);
+  const [deploys, setDeploys] = useState(null);
+
+  useEffect(() => {
+    const params = new URLSearchParams({ siteId: selectedSite });
+    if (selectedSite) {
+      fetch('/api/deploys?' + params.toString())
       .then((res) => res.json())
-      .then((body) => {
-        setDeploys(body)
-      });
-  };
+      .then((data) => {
+        if (data.code === 404) return;
+        setDeploys(data);
+      })
+    }
+    else {
+      setDeploys(null);
+    }
+    
+  }, [selectedSite]);
 
   const stateClasses = (state) => {
     switch (state) {
@@ -56,6 +54,13 @@ export default function Home() {
 
   return (
     <div className="p-8">
+        <div>
+          <label>Select a site:</label>
+          <select onChange={(e) => setSelectedSite(e.target.value)}>
+            <option value="">-- Select Site --</option>
+            { sites.map(site => <option key={site.id} value={site.id}>{ site.name }</option> )}
+          </select>
+        </div>
       {
         deploys && deploys.map((item) => (
           <div className="flex pb-4 mb-4 border-b border-gray-500 flex justify-between" key={item.id}>
@@ -78,4 +83,25 @@ export default function Home() {
       }
     </div>
   )
+}
+
+export async function getServerSideProps(context) {
+  const sitesRes = await fetch('https://api.netlify.com/api/v1/sites?filter=all', {
+    headers: {
+      authorization: `Bearer ${process.env.NETLIFY_TOKEN}`
+    }
+  }).then((res) => res.json());
+
+  const sites = sitesRes.map((site) => {
+    return {
+      id: site.id,
+      name: site.name
+    }
+  });
+
+  return {
+    props: {
+      sites,
+    }
+  }
 }
