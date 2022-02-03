@@ -1,27 +1,6 @@
-import { useEffect, useState } from "react";
 import { format, isToday, isYesterday } from 'date-fns'
 
-export default function Home() {
-  const [deploys, setDeploys] = useState();
-  useEffect(function mount() {
-    if (window.top === window.self) {
-      window.location.assign('https://app.storyblok.com/oauth/app_redirect')
-    } else {
-      loadList();
-    }
-  });
-  const loadList = () => {
-    // TODO: Replace site id
-    fetch('https://api.netlify.com/api/v1/sites/ce1b5cc8-4507-46b9-9416-dae43ce65989/deploys', {
-      headers: {
-        // TODO: Add bearer
-      }
-    })
-      .then((res) => res.json())
-      .then((body) => {
-        setDeploys(body)
-      });
-  };
+export default function Home({ deploys, session }) {
 
   const stateClasses = (state) => {
     switch (state) {
@@ -78,4 +57,17 @@ export default function Home() {
       }
     </div>
   )
+}
+
+export async function getServerSideProps(context) {
+  const params = new URLSearchParams({
+    page: 0,
+    per_page: 10,
+  })
+
+  return {
+    props: {
+      deploys
+    }
+  }
 }
