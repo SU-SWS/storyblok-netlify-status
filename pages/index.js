@@ -1,9 +1,17 @@
 import { useEffect, useState } from "react";
 import { format, isToday, isYesterday } from 'date-fns'
+import getConfig from 'next/config'
 
 export default function Home({ sites }) {
   const [selectedSite, setSelectedSite] = useState(null);
   const [deploys, setDeploys] = useState(null);
+  const { publicRuntimeConfig } = getConfig();
+  
+  useEffect(() => {
+    if (window.top == window.self && publicRuntimeConfig.environment !== 'development') {
+      window.location.assign('https://app.storyblok.com/oauth/app_redirect');
+    }
+  }, []);
 
   useEffect(() => {
     const params = new URLSearchParams({ siteId: selectedSite });
