@@ -1,14 +1,20 @@
+import React, { useState , useEffect } from 'react'
 import { format, isToday, isYesterday } from 'date-fns'
 import getConfig from 'next/config'
+import { useSession } from "next-auth/react"
 
-<<<<<<< HEAD
 export default function Home({ sites }) {
   const [selectedSite, setSelectedSite] = useState(null);
   const [deploys, setDeploys] = useState(null);
   const { publicRuntimeConfig } = getConfig();
+  const { data: session, status } = useSession();
+
+  if (status === 'unauthenticated') {
+    window.location.assign('/api/auth/signin');
+  }
   
   useEffect(() => {
-    if (window.top == window.self && publicRuntimeConfig.environment !== 'development') {
+    if (window.top == window.self) {
       window.location.assign('https://app.storyblok.com/oauth/app_redirect');
     }
   }, []);
@@ -28,9 +34,6 @@ export default function Home({ sites }) {
     }
     
   }, [selectedSite]);
-=======
-export default function Home({ deploys, session }) {
->>>>>>> ADAPT-4162-storyblok-oath
 
   const stateClasses = (state) => {
     switch (state) {
@@ -97,7 +100,6 @@ export default function Home({ deploys, session }) {
 }
 
 export async function getServerSideProps(context) {
-<<<<<<< HEAD
   const sitesRes = await fetch('https://api.netlify.com/api/v1/sites?filter=all', {
     headers: {
       authorization: `Bearer ${process.env.NETLIFY_TOKEN}`
@@ -113,17 +115,7 @@ export async function getServerSideProps(context) {
 
   return {
     props: {
-      sites,
-=======
-  const params = new URLSearchParams({
-    page: 0,
-    per_page: 10,
-  })
-
-  return {
-    props: {
-      deploys
->>>>>>> ADAPT-4162-storyblok-oath
+      sites
     }
   }
 }
