@@ -1,7 +1,7 @@
-import { useEffect, useState } from "react";
 import { format, isToday, isYesterday } from 'date-fns'
 import getConfig from 'next/config'
 
+<<<<<<< HEAD
 export default function Home({ sites }) {
   const [selectedSite, setSelectedSite] = useState(null);
   const [deploys, setDeploys] = useState(null);
@@ -28,6 +28,9 @@ export default function Home({ sites }) {
     }
     
   }, [selectedSite]);
+=======
+export default function Home({ deploys, session }) {
+>>>>>>> ADAPT-4162-storyblok-oath
 
   const stateClasses = (state) => {
     switch (state) {
@@ -94,6 +97,7 @@ export default function Home({ sites }) {
 }
 
 export async function getServerSideProps(context) {
+<<<<<<< HEAD
   const sitesRes = await fetch('https://api.netlify.com/api/v1/sites?filter=all', {
     headers: {
       authorization: `Bearer ${process.env.NETLIFY_TOKEN}`
@@ -110,6 +114,16 @@ export async function getServerSideProps(context) {
   return {
     props: {
       sites,
+=======
+  const params = new URLSearchParams({
+    page: 0,
+    per_page: 10,
+  })
+
+  return {
+    props: {
+      deploys
+>>>>>>> ADAPT-4162-storyblok-oath
     }
   }
 }
