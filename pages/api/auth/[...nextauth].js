@@ -48,7 +48,6 @@ export default NextAuth({
       },
       userinfo: 'https://api.storyblok.com/oauth/user_info',
       profile(profile) {
-        console.log('profile', profile);
         return {
           id: profile.space.id,
           name: profile.space.name,

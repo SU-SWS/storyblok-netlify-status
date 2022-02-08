@@ -6,12 +6,7 @@ import { useSession } from "next-auth/react"
 export default function Home({ sites }) {
   const [selectedSite, setSelectedSite] = useState(null);
   const [deploys, setDeploys] = useState(null);
-  const { publicRuntimeConfig } = getConfig();
   const { data: session, status } = useSession();
-
-  if (status === 'unauthenticated') {
-    window.location.assign('/api/auth/signin');
-  }
   
   useEffect(() => {
     if (window.top == window.self) {
