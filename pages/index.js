@@ -54,9 +54,9 @@ export default function Home({ sites }) {
 
   return (
     <div className="p-8">
-        <div>
-          <label>Select a site:</label>
-          <select onChange={(e) => setSelectedSite(e.target.value)}>
+        <div className="flex flex-col items-center justify-center">
+          <label className="font-xl font-semibold">Select a site:</label>
+          <select onChange={(e) => setSelectedSite(e.target.value)} className="border border-gray-500 rounded p-2">
             <option value="">-- Select Site --</option>
             { sites.map(site => <option key={site.id} value={site.id}>{ site.name }</option> )}
           </select>
