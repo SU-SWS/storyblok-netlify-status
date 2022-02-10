@@ -56,5 +56,16 @@ export default NextAuth({
         }
       }
     }
-  ]
+  ],
+  cookies: {
+    sessionToken: {
+      name: '__Secure-next-auth.session-token',
+      options: {
+        sameSite: 'None',
+        secure: true,
+        path: '/',
+        httpOnly: true
+      }
+    }
+  }
 })
