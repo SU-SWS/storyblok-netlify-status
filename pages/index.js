@@ -62,13 +62,14 @@ export default function Home({ sites, session, isAuthorized }) {
   if (isAuthorized) {
     return (
       <div className="p-8">
-          <div>
-            <label>Select a site:</label>
-            <select onChange={(e) => setSelectedSite(e.target.value)}>
-              <option value="">-- Select Site --</option>
-              { sites.map(site => <option key={site.id} value={site.id}>{ site.name }</option> )}
-            </select>
-          </div>
+        <div className="flex flex-col items-center justify-center">
+          <label className="font-xl font-semibold">Select a site:</label>
+          <select onChange={(e) => setSelectedSite(e.target.value)} className="border border-gray-500 rounded p-2">
+            <option value="">-- Select Site --</option>
+            { sites.map(site => <option key={site.id} value={site.id}>{ site.name }</option> )}
+          </select>
+        </div>
+
         {
           deploys && deploys.map((item) => (
             <div className="flex pb-4 mb-4 border-b border-gray-500 flex justify-between" key={item.id}>
