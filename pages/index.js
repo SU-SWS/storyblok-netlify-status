@@ -13,6 +13,7 @@ export default function Home({ sites, session, isAuthorized }) {
   }, []);
 
   useEffect(() => {
+    console.log('params', window.location.search);
     const params = new URLSearchParams({ siteId: selectedSite });
     if (selectedSite) {
       fetch('/api/deploys?' + params.toString())
