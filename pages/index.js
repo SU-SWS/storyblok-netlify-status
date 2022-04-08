@@ -100,10 +100,12 @@ export default function Home({ sites, session, isAuthorized }) {
 }
 
 export async function getServerSideProps(context) {
+  console.log('context', context);
   const referer = context.req.headers.referer || null;
   const session = await getSession(context);
-
+  
   if (!session) {
+    console.log('No active session. Redirecting to log in page');
     return {
       redirect: {
         destination: '/api/auth/signin/storyblok',
