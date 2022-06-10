@@ -1,33 +1,14 @@
 import React, { useState , useEffect } from 'react'
 import { format, isToday, isYesterday } from 'date-fns'
-import { useSession, getSession } from "next-auth/react"
+import { netlifySiteMapping } from '../util/netlify_sites';
+import { getSession } from '../util/session';
 
-export default function Home({ sites, session, isAuthorized }) {
-  const [selectedSite, setSelectedSite] = useState(null);
-  const [deploys, setDeploys] = useState(null); 
-  
+export default function Home({ siteName, isAuthorized, deploys }) {
   useEffect(() => {
     if (window.top === window.self) {
       window.location.replace('https://app.storyblok.com/oauth/app_redirect');
     }
   }, []);
-
-  useEffect(() => {
-    console.log('params', window.location.search);
-    const params = new URLSearchParams({ siteId: selectedSite });
-    if (selectedSite) {
-      fetch('/api/deploys?' + params.toString())
-      .then((res) => res.json())
-      .then((data) => {
-        if (data.code === 404) return;
-        setDeploys(data);
-      })
-    }
-    else {
-      setDeploys(null);
-    }
-    
-  }, [selectedSite]);
 
   const stateClasses = (state) => {
     switch (state) {
@@ -63,14 +44,9 @@ export default function Home({ sites, session, isAuthorized }) {
   if (isAuthorized) {
     return (
       <div className="p-8">
-        <div className="flex flex-col items-center justify-center">
-          <label className="font-xl font-semibold">Select a site:</label>
-          <select onChange={(e) => setSelectedSite(e.target.value)} className="border border-gray-500 rounded p-2">
-            <option value="">-- Select Site --</option>
-            { sites.map(site => <option key={site.id} value={site.id}>{ site.name }</option> )}
-          </select>
-        </div>
-
+        <h1 className="text-center text-2xl font-bold">
+          {siteName ? `Recent Netlify Builds for ${siteName}` : `Netlify Configuration not found for this Storyblok space.`}
+        </h1>
         {
           deploys && deploys.map((item) => (
             <div className="flex pb-4 mb-4 border-b border-gray-500 flex justify-between" key={item.id}>
@@ -99,39 +75,27 @@ export default function Home({ sites, session, isAuthorized }) {
   )
 }
 
-export async function getServerSideProps(context) {
-  console.log('context', context);
-  const referer = context.req.headers.referer || null;
-  const session = await getSession(context);
+export async function getServerSideProps({ req, res, query }) {
+  const session = await getSession(req, res);
+  console.log('getServerSide session', session);
+  const { space_id } = query;
+  const site = netlifySiteMapping[space_id] || null;
+  let deploys = null;
   
-  if (!session) {
-    console.log('No active session. Redirecting to log in page');
-    return {
-      redirect: {
-        destination: '/api/auth/signin/storyblok',
-        permanent: false,
+  if (site) {
+    const allDeploys = await fetch(`https://api.netlify.com/api/v1/sites/${site.netlifyId}/deploys`, {
+      headers: {
+        authorization: `Bearer ${process.env.NETLIFY_TOKEN}`
       }
-    }
+    }).then((res) => res.json());
+    deploys = allDeploys.filter((item) => item.branch === site.branch);
   }
-  
-  const sitesRes = await fetch('https://api.netlify.com/api/v1/sites?filter=all', {
-    headers: {
-      authorization: `Bearer ${process.env.NETLIFY_TOKEN}`
-    }
-  }).then((res) => res.json());
-
-  const sites = sitesRes.map((site) => {
-    return {
-      id: site.id,
-      name: site.name
-    }
-  });
 
   return {
     props: {
-      sites,
-      session,
-      isAuthorized: session ? true : false
+      siteName: site ? site.name : null,
+      deploys,
+      isAuthorized: true,
     }
   }
 }
