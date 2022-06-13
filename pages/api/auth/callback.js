@@ -16,7 +16,8 @@ export default async function handler(req, res) {
   try {
     const tokenResult = await axios.post('https://app.storyblok.com/oauth/token', params);
     const token = tokenResult.data;
-    const session = {};
+    const jwtCookie = cookies.get('netlifyStatusSess');
+    const session = jwtCookie ? jwt.decode(jwtCookie, process.env.JWT_SECRET) : {};
     if (!session.spaces) {
       session.spaces = {};
     }

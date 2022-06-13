@@ -50,7 +50,7 @@ export default function Home({ siteName, isAuthorized, deploys }) {
         </h1>
         {
           deploys && deploys.map((item) => (
-            <div className="flex pb-4 mb-4 border-b border-gray-500 flex justify-between" key={item.id}>
+            <div className="flex pb-4 mb-4 border-b border-gray-500 justify-between" key={item.id}>
               <div className="">
                 <div>
                   <strong className="capitalize">{item.context}</strong>: {item.branch}
@@ -80,12 +80,11 @@ export async function getServerSideProps({ req, res, query }) {
   const cookies = Cookies(req, res);
   const token = cookies.get('netlifyStatusSess');
   const session = jwt.decode(token, process.env.JWT_SECRET);
-  
   const { space_id } = query;
   const site = netlifySiteMapping[space_id] || null;
   let deploys = null;
 
-  if (!session.spaces || !session.spaces[space_id]) {
+  if (!session || !session.spaces || !session.spaces[space_id]) {
     return {
       props: {
         isAuthorized: false,
