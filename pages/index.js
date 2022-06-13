@@ -1,27 +1,34 @@
-import React, { useState , useEffect } from 'react'
+import React, { useState , useEffect, useCallback } from 'react'
 import { format, isToday, isYesterday } from 'date-fns'
 import { netlifySiteMapping } from '../util/netlify_sites';
-import { Skeleton } from '@mui/material';
+import { Skeleton, IconButton } from '@mui/material';
+import { Autorenew } from '@mui/icons-material';
 import Cookies from 'cookies';
 import jwt from 'jsonwebtoken';
 import axios from 'axios';
 
 export default function Home({ siteName, space_id, isAuthorized }) {
   const [deploys, setDeploys] = useState(null);
+
+  const fetchDeploys = useCallback(() => {
+    if (!isAuthorized) return;
+    axios.get(`/api/deploys?space_id=${space_id}`).then((res) => {
+      setDeploys(res.data);
+    });
+  }, [space_id, isAuthorized]);
+
   useEffect(() => {
     if (window.top === window.self) {
       window.location.replace('https://app.storyblok.com/oauth/app_redirect');
     }
     else {
+      fetchDeploys();
       // Refresh data every 15 seconds.
       setInterval(() => {
-        if (!isAuthorized) return;
-        axios.get(`/api/deploys?space_id=${space_id}`).then((res) => {
-          setDeploys(res.data);
-        });
+        fetchDeploys();
       }, 15000);
     }
-  }, [isAuthorized, space_id]);
+  }, [fetchDeploys]);
 
   const stateClasses = (state) => {
     switch (state) {
@@ -57,9 +64,15 @@ export default function Home({ siteName, space_id, isAuthorized }) {
   if (isAuthorized) {
     return (
       <div className="p-8">
-        <h1 className="text-center text-2xl font-bold">
+        <h1 className="text-center text-2xl font-bold mb-4">
           {siteName ? `Recent Netlify Builds for ${siteName}` : `Netlify Configuration not found for this Storyblok space.`}
         </h1>
+        
+        <div className="flex">
+          <IconButton aria-label="refresh" className="ml-auto" onClick={fetchDeploys}>
+            <Autorenew />
+          </IconButton>
+        </div>
         { deploys ? deploys.map((item) => (
             <div className="flex pb-4 mb-4 border-b border-gray-500 justify-between" key={item.id}>
               <div className="">
