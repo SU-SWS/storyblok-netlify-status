@@ -1,7 +1,8 @@
 import React, { useState , useEffect } from 'react'
 import { format, isToday, isYesterday } from 'date-fns'
 import { netlifySiteMapping } from '../util/netlify_sites';
-import { getSession } from '../util/session';
+import Cookies from 'cookies';
+import jwt from 'jsonwebtoken';
 
 export default function Home({ siteName, isAuthorized, deploys }) {
   useEffect(() => {
@@ -71,16 +72,26 @@ export default function Home({ siteName, isAuthorized, deploys }) {
     )
   }
   return (
-    <div>Wait...</div>
+    <div>Unauthorized</div>
   )
 }
 
 export async function getServerSideProps({ req, res, query }) {
-  const session = await getSession(req, res);
-  console.log('getServerSide session', session);
+  const cookies = Cookies(req, res);
+  const token = cookies.get('netlifyStatusSess');
+  const session = jwt.decode(token, process.env.JWT_SECRET);
+  
   const { space_id } = query;
   const site = netlifySiteMapping[space_id] || null;
   let deploys = null;
+
+  if (!session.spaces[space_id]) {
+    return {
+      props: {
+        isAuthorized: false,
+      }
+    }
+  }
   
   if (site) {
     const allDeploys = await fetch(`https://api.netlify.com/api/v1/sites/${site.netlifyId}/deploys`, {
