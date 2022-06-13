@@ -85,7 +85,7 @@ export async function getServerSideProps({ req, res, query }) {
   const site = netlifySiteMapping[space_id] || null;
   let deploys = null;
 
-  if (!session.spaces[space_id]) {
+  if (!session.spaces || !session.spaces[space_id]) {
     return {
       props: {
         isAuthorized: false,
