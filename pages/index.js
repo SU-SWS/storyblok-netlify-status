@@ -1,15 +1,27 @@
 import React, { useState , useEffect } from 'react'
 import { format, isToday, isYesterday } from 'date-fns'
 import { netlifySiteMapping } from '../util/netlify_sites';
+import { Skeleton } from '@mui/material';
 import Cookies from 'cookies';
 import jwt from 'jsonwebtoken';
+import axios from 'axios';
 
-export default function Home({ siteName, isAuthorized, deploys }) {
+export default function Home({ siteName, space_id, isAuthorized }) {
+  const [deploys, setDeploys] = useState(null);
   useEffect(() => {
     if (window.top === window.self) {
       window.location.replace('https://app.storyblok.com/oauth/app_redirect');
     }
-  }, []);
+    else {
+      // Refresh data every 15 seconds.
+      setInterval(() => {
+        if (!isAuthorized) return;
+        axios.get(`/api/deploys?space_id=${space_id}`).then((res) => {
+          setDeploys(res.data);
+        });
+      }, 15000);
+    }
+  }, [isAuthorized, space_id]);
 
   const stateClasses = (state) => {
     switch (state) {
@@ -48,8 +60,7 @@ export default function Home({ siteName, isAuthorized, deploys }) {
         <h1 className="text-center text-2xl font-bold">
           {siteName ? `Recent Netlify Builds for ${siteName}` : `Netlify Configuration not found for this Storyblok space.`}
         </h1>
-        {
-          deploys && deploys.map((item) => (
+        { deploys ? deploys.map((item) => (
             <div className="flex pb-4 mb-4 border-b border-gray-500 justify-between" key={item.id}>
               <div className="">
                 <div>
@@ -66,8 +77,13 @@ export default function Home({ siteName, isAuthorized, deploys }) {
                 }
               </div>
             </div>
-          ))
-        }
+          )) : (
+            <div className="mt-8">
+              <Skeleton variant="rectangular" height={65} sx={{marginBottom: '16px'}}/>
+              <Skeleton variant="rectangular" height={65} sx={{marginBottom: '16px'}}/>
+              <Skeleton variant="rectangular" height={65} sx={{marginBottom: '16px'}}/>
+            </div>
+          )}
       </div>
     )
   }
@@ -82,30 +98,13 @@ export async function getServerSideProps({ req, res, query }) {
   const session = jwt.decode(token, process.env.JWT_SECRET);
   const { space_id } = query;
   const site = netlifySiteMapping[space_id] || null;
-  let deploys = null;
-
-  if (!session || !session.spaces || !session.spaces[space_id]) {
-    return {
-      props: {
-        isAuthorized: false,
-      }
-    }
-  }
-  
-  if (site) {
-    const allDeploys = await fetch(`https://api.netlify.com/api/v1/sites/${site.netlifyId}/deploys`, {
-      headers: {
-        authorization: `Bearer ${process.env.NETLIFY_TOKEN}`
-      }
-    }).then((res) => res.json());
-    deploys = allDeploys.filter((item) => item.branch === site.branch);
-  }
+  const isAuthorized = session && session.spaces && session.spaces[space_id];
 
   return {
     props: {
+      space_id,
       siteName: site ? site.name : null,
-      deploys,
-      isAuthorized: true,
+      isAuthorized,
     }
   }
 }
