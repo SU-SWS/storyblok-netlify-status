@@ -2,7 +2,7 @@ import React, { useState , useEffect, useCallback } from 'react'
 import { format, isToday, isYesterday } from 'date-fns'
 import { netlifySiteMapping } from '../util/netlify_sites';
 import { Skeleton, IconButton } from '@mui/material';
-import { Autorenew } from '@mui/icons-material';
+import Autorenew from '@mui/icons-material/Autorenew';
 import Cookies from 'cookies';
 import jwt from 'jsonwebtoken';
 import axios from 'axios';
