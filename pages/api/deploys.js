@@ -9,10 +9,9 @@ export default async function handler(req, res) {
   const { space_id } = req.query;
   const site = netlifySiteMapping[space_id] || null;
   let deploys = null;
-  
   // If user does not have active JWT token, return unauthorized.
-  if (!session || !session.spaces || !session.spaces[space_id]) {
-    res.status(401);
+  if (!token || !session || !session.spaces || !session.spaces[space_id]) {
+    res.status(401).send('Unauthorized');
   }
   
   if (site) {
