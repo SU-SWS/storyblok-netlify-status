@@ -69,7 +69,7 @@ export default function Home({ siteName, space_id, isAuthorized }) {
         </h1>
         
         <div className="flex">
-          <IconButton aria-label="refresh" className="ml-auto" onClick={fetchDeploys}>
+          <IconButton aria-label="refresh" sx={{ marginLeft: 'auto' }} onClick={fetchDeploys}>
             <Autorenew />
           </IconButton>
         </div>
