@@ -1,4 +1,9 @@
 export const netlifySiteMapping = {
+  122401: {
+    name: 'Dev - OOD Giving',
+    netlifyId: 'b539dff9-d21b-4a2e-8edc-b9cb898c26b2',
+    branch: 'dev',
+  },
   118605: {
     name: 'Dev - OOD Make a Gift',
     netlifyId: 'eec5640a-ac67-40e5-99f4-45955126c264',
